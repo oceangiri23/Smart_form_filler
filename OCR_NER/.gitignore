@@ -1,0 +1,3 @@
+# Ignore specific folders
+OCRNER/model/V1/saved_model/
+OCRNER/model/V1/tokenizer_saved_model/
