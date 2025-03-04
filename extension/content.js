@@ -25,8 +25,6 @@ const districtMapping = {
   makawanpur: "32",
   sunsari: "14",
   rupandehi: "48",
-
-  // Add other districts as needed
 };
 const gendermapping = {
   male: "M",
