@@ -58,13 +58,5 @@ The extracted information is outputted as a JSON file with 13 specific tags, suc
 }
 ```
 
-## Usage
-1. Prepare your document image.
-2. Preprocess the image using OpenCV functions.
-3. Apply OCR (Tesseract or PaddleOCR).
-4. Pass the OCR output to the fine-tuned BERT model for NER tagging.
-5. Get the structured output in JSON format.
 
-## License
-This project is licensed under the MIT License.
 
