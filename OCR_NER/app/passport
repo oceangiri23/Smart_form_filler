@@ -1,0 +1,130 @@
+import pytesseract
+import cv2
+import os
+import matplotlib.pyplot as plt
+import numpy as np
+
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
+custom_config = r'--oem 3 --psm 6'
+
+def preprocess_mrz(image_path):
+
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    height, width, _ = image.shape
+    crop_height = int((6 / 9) * height)
+    cropped_image = image[crop_height:, :]
+    plt.imshow(cropped_image)
+    gray = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2GRAY)
+
+    sharpening_kernel = np.array([[0, -1,  0],
+                               [-1,  5, -1],
+                               [0, -1,  0]])
+
+    sharpened_image = cv2.filter2D(gray, -1, sharpening_kernel)
+    plt.imshow(sharpened_image)
+    return sharpened_image
+
+def extract_mrz_text(image_path):
+
+    processed = preprocess_mrz(image_path)
+    custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<'
+    full_text = pytesseract.image_to_string(processed, config=custom_config)
+    lines = [line for line in full_text.splitlines() if line.strip()]
+
+    if len(lines) >= 2:
+        last_two_lines = lines[-4:]
+    else:
+        last_two_lines = lines
+
+    all_words = last_two_lines
+    top_two = []
+    for word in all_words:
+        if len(top_two) < 2:
+            top_two.append(word)
+        else:
+            min_len_word = min(top_two, key=len)
+            if len(word) > len(min_len_word):
+                top_two[top_two.index(min_len_word)] = word
+
+    return top_two
+
+
+def parse_name(name_field):
+    parts = name_field.split('<<')
+    surname = parts[0].replace('<', ' ').strip()
+    given = ''
+    if len(parts) > 1:
+        given = parts[1].replace('<', ' ').strip().lower()
+    surname = surname[5:]
+    surnames = surname[:-1] if surname.endswith('k') else surname
+    firstname = given[:-1] if given.endswith('k') else given
+    return surnames, firstname.upper()
+
+
+def extract_passportno(s: str, nationality: str = "NPL") -> str:
+    i = s.find(nationality)
+    if i <= 0:
+        return "" 
+    return s[: i - 1]
+
+def extract_DOB(s: str) -> str:
+
+    idx = s.find("NPL")
+    if idx == -1:
+        return ""
+    DOB = s[idx + len("NPL") : idx + len("NPL") + 6]
+    return "20"+DOB[0:2]+"-"+DOB[2:4]+"-"+DOB[4:6]
+
+def extract_gender(s: str)->str:
+  idx = s.find("NPL")
+  if idx == -1:
+      return ""
+  gndr = s[idx + len("NPL") +7 : idx + len("NPL") + 8]
+  if gndr == 'M':
+    return "MALE"
+  else:
+    return "Female"
+
+def extract_expiredate(s: str) -> str:
+    idx = s.find("NPL")
+    if idx == -1:
+        return ""
+    expire = s[idx + len("NPL") +8: idx + len("NPL") + 14]
+    return "20"+expire[0:2]+"-"+expire[2:4]+"-"+expire[4:6]
+
+def extract_citno(s: str) -> str:
+    idx = s.find("NPL")
+    if idx == -1:
+        return ""
+    citno = s[idx + len("NPL") +15: idx + len("NPL") + 26]
+    return citno[0:2] + "-"+citno[2:4]+ '-' +citno[4:]
+
+
+
+
+
+def main(image_path):
+    data = {}
+    mrz_text = extract_mrz_text(image_path)
+    data.update({"fname": parse_name(mrz_text[1])[1]})
+    data.update({"lname": parse_name(mrz_text[1])[0]})
+
+    code = mrz_text[0]
+    code = code.replace('<', '')
+    data.update({"passportno": extract_passportno(code)})
+    data.update({"dob": extract_DOB(code)})
+    data.update({"gender": extract_gender(code)})
+    data.update({"expiredate": extract_expiredate(code)})
+    data.update({"citno": extract_citno(code)})
+
+    return data
+
+if __name__ == "__main__":
+    image_path = r"../imagedata/passporttt.jpg"
+    data = main(image_path)
+    print(data)
+
+
+
+
