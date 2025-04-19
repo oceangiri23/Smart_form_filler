@@ -40,7 +40,7 @@ model--
 
 ## Output Format
 The extracted information is outputted as a JSON file with 13 specific tags, such as:
-```json
+```
 {
 'citizenship_num': '37-02-77-00000',
 'first_name': 'John',
@@ -55,6 +55,22 @@ The extracted information is outputted as a JSON file with 13 specific tags, suc
 'Permanent_dist': 'Rupandehi',
 'Permanent_ward': 'tilottama',
 'Permanent_wardno': '1'
+}
+```
+
+## For passport document 
+For passport processing, we utilized the Machine Readable Zone (MRZ) located at the bottom of the document. The Nepali passport follows the TD3 format, which consists of two lines, each containing 44 characters. The first line includes the surname and given names, while the second line contains the passport number, nationality, date of birth, expiration date, and citizenship number.
+
+The MRZ section is cropped from the document image and passed through an OCR model for text extraction. Subsequently, regular expressions are applied to the OCR output to accurately extract and structure the information in a proper format.
+```
+{
+'first_name': 'DIPU',
+ 'last_name': 'CHAULAGAIN',
+ 'passport_no': '12066201',
+ 'DOB': '2088-04-03',
+ 'gender': 'MALE',
+ 'expire_date': '2031-01-19',
+'cit_no': '2118200'
 }
 ```
 
