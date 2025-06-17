@@ -1,3 +1,5 @@
+[Watch Demo Video](https://github.com/oceangiri23/Smart_form_filler/blob/main/demovideo.mp4)
+
 # Nepali Document Information Extraction
 
 This project aims to extract vital data from Nepali documents in a structured format. It uses different image preprocessing steps with OpenCV, passes the processed images to an OCR model (Tesseract/PaddleOCR), and then applies a fine-tuned BERT Named Entity Recognition (NER) model. The BERT model is fine-tuned on manually labeled data generated from the OCR output, extracting 13 tags from sentences and providing the results in JSON format.
